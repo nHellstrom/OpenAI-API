@@ -1,5 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
+using OpenAI_API.Models;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace OpenAI_API.Controllers
 {
@@ -24,18 +30,23 @@ namespace OpenAI_API.Controllers
         {
             string uri = "https://api.openai.com/v1/completions";
             //httpClient.DefaultRequestHeaders.Accept.Clear();
-            //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
-            //httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
-            //var request = new HttpContent();
-            var content = new JsonContent();
-            var response = await httpClient.PostAsync(uri, msgContent);
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
 
-            var headers = HttpContext.Request.Headers;
-            headers.Add("Content-Type", "application/json");
-            headers.Authorization = = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
-            headers.
+            RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = "Please motivate me, I am depressed from programming", temperature = 0.4F, max_tokens = 12 };
 
-            return response.ToString();
+            var msgJson = new StringContent(
+                JsonSerializer.Serialize(request),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await httpClient.PostAsync(uri, msgJson);
+
+            //return JsonSerializer.Serialize(request);
+
+            var stringResponse = await response.Content.ReadAsStringAsync();
+            //var streamResponse = await response.Content.ReadAsStringAsync(); '
+            //return JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
+            return stringResponse;
         }
     }
 }
