@@ -32,7 +32,7 @@ namespace OpenAI_API.Controllers
             //httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
 
-            RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = "Please motivate me, I am depressed from programming", temperature = 0.4F, max_tokens = 12 };
+            RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = "Please motivate me, I am depressed from programming", temperature = 0.4F, max_tokens = 40 };
 
             var msgJson = new StringContent(
                 JsonSerializer.Serialize(request),
@@ -41,12 +41,13 @@ namespace OpenAI_API.Controllers
 
             var response = await httpClient.PostAsync(uri, msgJson);
 
-            //return JsonSerializer.Serialize(request);
+            //var stringResponse = await response.Content.ReadAsStringAsync();
+            //return stringResponse;
 
-            var stringResponse = await response.Content.ReadAsStringAsync();
-            //var streamResponse = await response.Content.ReadAsStringAsync(); '
-            //return JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
-            return stringResponse;
+            var streamResponse = await response.Content.ReadAsStreamAsync();
+            var deserializedResponse = JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
+
+            return deserializedResponse.Answers[0].text;
         }
     }
 }

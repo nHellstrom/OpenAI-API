@@ -28,7 +28,7 @@ public class ResponseDTO
     [JsonPropertyName("created")]
     public int? Created { get; set; }
     [JsonPropertyName("choices")]
-    public AnswerDTO? Answers { get; set; }
+    public AnswerDTO[]? Answers { get; set; }
     [JsonPropertyName("usage")]
     public ConsumptionDTO? Costs { get; set; }
 }
