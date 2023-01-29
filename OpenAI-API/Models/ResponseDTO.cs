@@ -4,7 +4,7 @@ namespace OpenAI_API.Models;
 
 public class AnswerDTO
 {
-    public string? text { get; set; }
+    public string text { get; set; }
     public int? index { get; set; }
     public string? finish_reason { get; set; }
 }

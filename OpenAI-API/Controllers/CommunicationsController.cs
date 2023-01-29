@@ -25,14 +25,24 @@ namespace OpenAI_API.Controllers
             httpClient = client;
         }
 
-        [HttpGet(Name = "TalkToGPT")]
-        public async Task<string> Get()
+        [HttpPost(Name = "TalkToGPT")]
+        public async Task<Stream> Get([FromBody] CharacterPrompt charData)
         {
             string uri = "https://api.openai.com/v1/completions";
             //httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
 
-            RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = "Please motivate me, I am depressed from programming", temperature = 0.4F, max_tokens = 40 };
+            //var charData = JsonSerializer.Deserialize<CharacterPrompt>(bodyData);
+
+            RequestDTO request = new RequestDTO
+            {
+                model = "text-davinci-003",
+                prompt = $"Write a very concise biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case",
+                temperature = 0.4F,
+                max_tokens = 200
+            };
+            //RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = question, temperature = 0.4F, max_tokens = 100 };
+
 
             var msgJson = new StringContent(
                 JsonSerializer.Serialize(request),
@@ -45,9 +55,10 @@ namespace OpenAI_API.Controllers
             //return stringResponse;
 
             var streamResponse = await response.Content.ReadAsStreamAsync();
-            var deserializedResponse = JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
+            return streamResponse;
+            //var deserializedResponse = JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
 
-            return deserializedResponse.Answers[0].text;
+            //return deserializedResponse.Answers[0].text;
         }
     }
 }
