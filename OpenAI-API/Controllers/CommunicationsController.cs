@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using OpenAI_API.Models;
+using System;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -34,9 +35,9 @@ namespace OpenAI_API.Controllers
             RequestDTO request = new RequestDTO
             {
                 model = "text-davinci-003",
-                prompt = $"Write a colourful biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case. End it with explaining why they are on an adventure and what motivates them",
+                prompt = $"Write a colourful biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case. End it with explaining why they are on an adventure and what motivates them. Maximum 975 characters",
                 temperature = 0.4F,
-                max_tokens = 400
+                max_tokens = 200
             };
 
             var msgJson = new StringContent(
@@ -56,9 +57,35 @@ namespace OpenAI_API.Controllers
             //return deserializedResponse.Answers[0].text;
         }
 
+        [HttpPost("Image")]
+        public async Task<Stream> GetPortrait([FromBody] CharacterBio characterBio)
+        {
+            string uri = "https://api.openai.com/v1/images/generations";
+
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
+
+            PortraitRequestDTO request = new PortraitRequestDTO
+            {
+                prompt = $"Portrait of this person: {characterBio.bio}.",
+                n = 1,
+                size = "256x256",
+                response_format = "url"
+            };
+
+            var msgJson = new StringContent(
+              JsonSerializer.Serialize(request),
+              Encoding.UTF8,
+              "application/json");
+
+            var response = await httpClient.PostAsync(uri, msgJson);
+            var streamResponse = await response.Content.ReadAsStreamAsync();
+        
+            return streamResponse;
+        }
+
         [HttpPost("UseCustomKey")]
         //[Route("~/Communications/CustomKey")]
-        public async Task<Stream> Get([FromBody] CharacterPromptWithKey charData)
+        public async Task<Stream> GetWithKey([FromBody] CharacterPromptWithKey charData)
         {
             string uri = "https://api.openai.com/v1/completions";
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", charData.key);
