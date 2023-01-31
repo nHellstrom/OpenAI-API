@@ -29,20 +29,47 @@ namespace OpenAI_API.Controllers
         public async Task<Stream> Get([FromBody] CharacterPrompt charData)
         {
             string uri = "https://api.openai.com/v1/completions";
-            //httpClient.DefaultRequestHeaders.Accept.Clear();
             httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _configuration["OpenAI:UserAPI"]);
-
-            //var charData = JsonSerializer.Deserialize<CharacterPrompt>(bodyData);
 
             RequestDTO request = new RequestDTO
             {
                 model = "text-davinci-003",
-                prompt = $"Write a very concise biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case",
+                prompt = $"Write a colourful biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case. End it with explaining why they are on an adventure and what motivates them",
                 temperature = 0.4F,
-                max_tokens = 200
+                max_tokens = 400
             };
-            //RequestDTO request = new RequestDTO { model = "text-davinci-003", prompt = question, temperature = 0.4F, max_tokens = 100 };
 
+            var msgJson = new StringContent(
+                JsonSerializer.Serialize(request),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await httpClient.PostAsync(uri, msgJson);
+
+            //var stringResponse = await response.Content.ReadAsStringAsync();
+            //return stringResponse;
+
+            var streamResponse = await response.Content.ReadAsStreamAsync();
+            return streamResponse;
+            //var deserializedResponse = JsonSerializer.Deserialize<ResponseDTO>(streamResponse);
+
+            //return deserializedResponse.Answers[0].text;
+        }
+
+        [HttpPost("UseCustomKey")]
+        //[Route("~/Communications/CustomKey")]
+        public async Task<Stream> Get([FromBody] CharacterPromptWithKey charData)
+        {
+            string uri = "https://api.openai.com/v1/completions";
+            httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", charData.key);
+
+            RequestDTO request = new RequestDTO
+            {
+                model = "text-davinci-003",
+                prompt = $"Write a colourful biography for a fantasy character that fits these traits: {charData.race}, {charData.role}, {charData.alignmentX} {charData.alignmentY}. Start by saying the character name in upper case. End it with explaining why they are on an adventure and what motivates them",
+                temperature = 0.4F,
+                max_tokens = 400
+            };
 
             var msgJson = new StringContent(
                 JsonSerializer.Serialize(request),
