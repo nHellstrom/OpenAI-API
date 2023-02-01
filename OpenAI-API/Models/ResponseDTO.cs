@@ -32,3 +32,16 @@ public class ResponseDTO
     [JsonPropertyName("usage")]
     public ConsumptionDTO? Costs { get; set; }
 }
+
+public class ImageUrlDTO
+{
+    public string url { get; set; }
+}
+
+public class ImageResponseDTO
+{
+    [JsonPropertyName("created")]
+    public int? Timestamp { get; set; }
+    [JsonPropertyName("data")]
+    public ImageUrlDTO[]? Response { get; set; }
+}
